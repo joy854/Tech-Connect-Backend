@@ -5,10 +5,10 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', '*');
-//   next();
-// });
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+});
 const knex = require('knex');
 const saltRounds = 10;
 const db = knex({
