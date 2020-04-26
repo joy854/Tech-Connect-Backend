@@ -12,10 +12,12 @@ const db = knex({
   //connect server to database
   client: 'pg',
   connection: {
-    host: '127.0.0.1',
-    user: 'postgres',
-    password: 'postgres',
-    database: 'joy',
+    // host: '127.0.0.1',
+    // user: 'postgres',
+    // password: 'postgres',
+    // database: 'joy',
+    connectionString: process.env.DATABASE_URL,
+    ssl: true,
   },
 });
 // db.select('*')
@@ -141,7 +143,6 @@ app.post('/insertPost', (req, res) => {
           username: rows[0].username,
           fname: rows[0].fname,
           lname: rows[0].lname,
-          entry_cnt: 0,
         })
         .then((user) => res.json(user[0]))
         .catch((err) => res.status(400).json('Error'));
