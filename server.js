@@ -5,22 +5,22 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', '*');
+//   next();
+// });
 const knex = require('knex');
 const saltRounds = 10;
 const db = knex({
   //connect server to database
   client: 'pg',
   connection: {
-    // host: '127.0.0.1',
-    // user: 'postgres',
-    // password: 'postgres',
-    // database: 'joy'
-    connectionString: process.env.DATABASE_URL,
-    ssl: true,
+    host: '127.0.0.1',
+    user: 'postgres',
+    password: 'postgres',
+    database: 'joy',
+    // connectionString: process.env.DATABASE_URL,
+    // ssl: true,
   },
 });
 // db.select('*')
@@ -395,4 +395,4 @@ app.post('/deleteLike', (req, res) => {
     .then((user) => res.json(user[0]))
     .catch((err) => res.status(400).json('Error'));
 });
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 3001);
