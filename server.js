@@ -52,7 +52,7 @@ app.get('/getSkills', (req, res) => {
 
 app.post('/register', (req, res) => {
   //   res.send('Ho');
-  //   console.log(req.body);
+  console.log(req.body, 'HI');
   const {
     fName,
     lName,
@@ -373,6 +373,7 @@ app.post('/insertlike', (req, res) => {
 });
 
 app.get('/getLikes', (req, res) => {
+  console.log('HII');
   db.select('*')
     .from('likes')
     .then((data) => {
