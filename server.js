@@ -20,8 +20,7 @@ const db = knex({
     // user: 'postgres',
     // password: 'postgres',
     // database: 'joy',
-    connectionString:
-      'postgres://pnknywxpoijeku:01ee818546b5e4456ce05833af8fe78bb0fc0ee21b1ec206ca4143c06af1f965@ec2-52-71-55-81.compute-1.amazonaws.com:5432/df04lj07hv3ndr',
+    connectionString: process.env.DATABASE_URL,
     ssl: true,
   },
 });
