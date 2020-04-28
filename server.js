@@ -405,10 +405,6 @@ app.post('/deleteLike', (req, res) => {
 
 app.get('/', (req, res) => {
   console.log('HI');
-  res.send('SUP');
-});
-app.listen(process.env.PORT || 3001, (req, res) => {
-  console.log('HI');
   res.send(`${(process.env.PORT, process.env.DATABASE_URL)}`);
 });
 
