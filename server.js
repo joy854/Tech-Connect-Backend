@@ -396,4 +396,14 @@ app.post('/deleteLike', (req, res) => {
     .then((user) => res.json(user[0]))
     .catch((err) => res.status(400).json('Error'));
 });
+
+app.get('/', (req, res) => {
+  console.log('HI');
+  res.send('SUP');
+});
+// app.listen(process.env.PORT || 3001, (req, res) => {
+//   console.log('HI');
+//   res.send('SUP');
+// });
+
 app.listen(process.env.PORT || 3001);
