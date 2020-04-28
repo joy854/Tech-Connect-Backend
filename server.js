@@ -203,9 +203,9 @@ app.get('/users', (req, res) => {
     .from('users')
     .then((data) => {
       if (data.length) res.json(data);
-      else res.status(400).json('error');
+      else res.status(400).json('Not found');
     })
-    .catch((err) => res.status(400).json('error'));
+    .catch((err) => res.status(400).json('Not found'));
 });
 
 app.get('/getFollowers', (req, res) => {
