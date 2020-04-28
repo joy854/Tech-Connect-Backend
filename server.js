@@ -10,6 +10,9 @@ app.use(bodyParser.json());
 //   res.header('Access-Control-Allow-Origin', '*');
 //   next();
 // });
+const isProduction = process.env.NODE_ENV === 'production';
+const connectionString =
+  'postgres://pnknywxpoijeku:01ee818546b5e4456ce05833af8fe78bb0fc0ee21b1ec206ca4143c06af1f965@ec2-52-71-55-81.compute-1.amazonaws.com:5432/df04lj07hv3ndr';
 const knex = require('knex');
 const saltRounds = 10;
 const db = knex({
@@ -20,8 +23,10 @@ const db = knex({
     // user: 'postgres',
     // password: 'postgres',
     // database: 'joy',
-    connectionString: process.env.DATABASE_URL,
-    ssl: true,
+    connectionString: isProduction
+      ? process.env.DATABASE_URL
+      : connectionString,
+    ssl: isProduction,
   },
 });
 // db.select('*')
