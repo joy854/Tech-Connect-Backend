@@ -6,13 +6,8 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', '*');
-//   next();
-// });
-const isProduction = process.env.NODE_ENV === 'production';
-const connectionString =
-  'postgres://pnknywxpoijeku:01ee818546b5e4456ce05833af8fe78bb0fc0ee21b1ec206ca4143c06af1f965@ec2-52-71-55-81.compute-1.amazonaws.com:5432/df04lj07hv3ndr';
+
+// const isProduction = process.env.NODE_ENV === 'production';
 const knex = require('knex');
 const saltRounds = 10;
 const db = knex({
@@ -23,10 +18,8 @@ const db = knex({
     // user: 'postgres',
     // password: 'postgres',
     // database: 'joy',
-    connectionString: isProduction
-      ? process.env.DATABASE_URL
-      : connectionString,
-    ssl: isProduction,
+    connectionString: process.env.DATABASE_URL,
+    ssl: true,
   },
 });
 // db.select('*')
@@ -405,7 +398,7 @@ app.post('/deleteLike', (req, res) => {
 
 app.get('/', (req, res) => {
   console.log('HI');
-  res.send(`${(process.env.PORT, process.env.DATABASE_URL)}`);
+  res.send(`${process.env.PORT},${process.env.DATABASE_URL}`);
 });
 
 app.listen(process.env.PORT || 3001);
