@@ -10,6 +10,7 @@ app.use(bodyParser.json());
 // const isProduction = process.env.NODE_ENV === 'production';
 const knex = require('knex');
 const saltRounds = 10;
+
 const db = knex({
   //connect server to database
   client: 'pg',
@@ -22,6 +23,7 @@ const db = knex({
     ssl: true,
   },
 });
+const PORT = process.env.PORT || 3000;
 // db.select('*')
 //   .from('users')
 //   .then((rows) => console.log(rows));
@@ -398,7 +400,7 @@ app.post('/deleteLike', (req, res) => {
 
 app.get('/', (req, res) => {
   console.log('HI');
-  res.send(`${process.env.PORT},${process.env.DATABASE_URL}`);
+  res.send(`${PORT},${process.env.DATABASE_URL}`);
 });
 
-app.listen(process.env.PORT || 3001);
+app.listen(PORT);
