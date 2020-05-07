@@ -203,9 +203,12 @@ app.get('/users', (req, res) => {
     .from('users')
     .then((data) => {
       if (data.length) res.json(data);
-      else res.status(400).json('Not found');
+      else res.status(404).json('Not found');
     })
-    .catch((err) => res.status(400).json('Not found'));
+    .catch((err) => {
+      console.log(error);
+      res.status(500).json('Internal server error');
+    });
 });
 
 app.get('/getFollowers', (req, res) => {
