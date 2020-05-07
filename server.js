@@ -400,7 +400,7 @@ app.post('/deleteLike', (req, res) => {
 
 app.get('/', (req, res) => {
   // console.log(connectionString);
-  res.send(`${PORT}     ${process.env.DATABASE_URL}`);
+  res.send(`${PORT}     ${connectionString}`);
 });
 
 app.listen(PORT);
