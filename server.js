@@ -206,7 +206,7 @@ app.get('/users', (req, res) => {
       else res.status(404).json('Not found');
     })
     .catch((err) => {
-      console.log(error);
+      console.log(err);
       res.status(500).json('Internal server error');
     });
 });
