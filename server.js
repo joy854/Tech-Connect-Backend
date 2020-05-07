@@ -399,7 +399,7 @@ app.post('/deleteLike', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  console.log('HI');
+  console.log(connectionString);
   res.send(`${PORT},${process.env.DATABASE_URL}`);
 });
 
