@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 // const isProduction = process.env.NODE_ENV === 'production';
 const knex = require('knex');
 const saltRounds = 10;
-
+const connectionString;
 const db = knex({
   //connect server to database
   client: 'pg',
