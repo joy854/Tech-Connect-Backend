@@ -216,7 +216,7 @@ app.get('/getFollowers', (req, res) => {
     .from('follows')
     .then((data) => {
       if (data.length) res.json(data);
-      else res.status(400).json('error');
+      else res.status(404).json('error');
     })
     .catch((err) => res.status(400).json('error'));
 });
