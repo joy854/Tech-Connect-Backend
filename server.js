@@ -84,7 +84,7 @@ app.post('/register', (req, res) => {
       email,
       username,
       password: hash,
-      // joined: new Date(),
+      joined: new Date(),
     })
     .then((user) => res.json(user[0])) //only 1 row changed thus only 1 row of this query
     .catch((err) => res.status(400).json('Error'));
