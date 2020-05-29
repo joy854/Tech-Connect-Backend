@@ -198,7 +198,7 @@ app.post('/users/:id', (req, res) => {
     .catch((err) => res.status(400).json('error'));
 });
 
-app.get('/users', (req, res) => {
+app.get('http://angry-shape.surge.sh/users', (req, res) => {
   db.select('*')
     .from('users')
     .then((data) => {
