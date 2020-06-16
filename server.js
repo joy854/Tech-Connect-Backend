@@ -201,6 +201,7 @@ app.post('/users/:id', (req, res) => {
 app.get('/users', (req, res) => {
   db.select('*')
     .from('users')
+    .orderBy('id', asc)
     .then((data) => {
       if (data.length) res.json(data);
       else res.status(404).json('Not found');
