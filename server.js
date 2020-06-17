@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const cors = require('cors');
 require('dotenv').config();
 const app = express();
+const jwt = require('jsonwebtoken');
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -22,12 +23,30 @@ const db = knex({
     ssl: true,
   },
 });
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 // db.select('*')
 //   .from('users')
 //   .then((rows) => console.log(rows));
+
+function verifyToken(req, res, next) {
+  // Get auth header value
+  const bearerHeader = req.headers['authorization'];
+  // Check if bearer is undefined
+  if (typeof bearerHeader !== 'undefined') {
+    // Split at the space
+    const bearer = bearerHeader.split(' ');
+    // Get token from array
+    const bearerToken = bearer[1];
+    // Set the token
+    req.token = bearerToken;
+    // Next middleware
+    next();
+  } else {
+    // Forbidden
+    res.sendStatus(403);
+  }
+}
 app.post('/storeSkill', (req, res) => {
-  // console.log(req.body);
   const { skill_title, id } = req.body;
   db('skills')
     .returning('*')
@@ -67,6 +86,11 @@ app.post('/register', (req, res) => {
     // skill,
   } = req.body;
   console.log(req.body);
+  // jwt.sign({user}, 'secretkey', { expiresIn: '30s' }, (err, token) => {
+  //   res.json({
+  //     token
+  //   });
+  // });
   // if (!password) res.status(400).json('Empty'); done at frontend
   const hash = bcrypt.hashSync(password, saltRounds);
 
@@ -93,6 +117,7 @@ app.post('/register', (req, res) => {
 });
 app.post('/signin', (req, res) => {
   const { email, password } = req.body;
+  // console.log('hi');
   db.select('email', 'id', 'password')
     .from('users')
     .where('email', '=', email)
@@ -104,7 +129,12 @@ app.post('/signin', (req, res) => {
           .from('users')
           .where('email', '=', email)
           .then((user) => {
-            res.json(user[0]);
+            jwt.sign({ user }, 'secretkey', (err, token) => {
+              res.json({
+                token,
+                user,
+              });
+            });
           })
           .catch((err) => res.status(400).json('unable to get user'));
       } else {
@@ -127,31 +157,48 @@ app.post('/getDetails', (req, res) => {
     .catch((err) => res.status(400).json('error'));
 });
 
-app.post('/insertPost', (req, res) => {
+app.post('/insertPost', verifyToken, (req, res) => {
   const { text, url, id, post_id } = req.body;
-  db.select('username', 'fname', 'lname', 'image')
-    .from('users')
-    .where({ id: id })
-    .then(function (rows) {
-      // return db.insert({id: rows[0].id, post_id: post_id}, 'id').into('posts');
-      return db('posts')
-        .returning('*')
-        .insert({
-          content: text,
-          post_url: url,
-          id,
-          post_id,
-          time_of_creation: new Date(),
-          image_url: rows[0].image,
-          username: rows[0].username,
-          fname: rows[0].fname,
-          lname: rows[0].lname,
-        })
-        .then((user) => res.json(user[0]))
-        .catch((err) => res.status(400).json('Error'));
-    });
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      // res.json({
+      //   message: 'Post created...',
+      //   authData,
+      // });
+      console.log('hi');
+      db.select('username', 'fname', 'lname', 'image')
+        .from('users')
+        .where({ id: id })
+        .then(function (rows) {
+          // return db.insert({id: rows[0].id, post_id: post_id}, 'id').into('posts');
+          return db('posts')
+            .returning('*')
+            .insert({
+              content: text,
+              post_url: url,
+              id,
+              post_id,
+              time_of_creation: new Date(),
+              image_url: rows[0].image,
+              username: rows[0].username,
+              fname: rows[0].fname,
+              lname: rows[0].lname,
+            })
+            .then((user) => res.json(user[0]))
+            .catch((err) => res.status(400).json('Error'));
+        });
+    }
+  });
 });
-
+app.post('/getUserFromToken', (req, res) => {
+  const { usertoken } = req.body;
+  jwt.verify(usertoken, 'secretkey', (err, data) => {
+    if (err) res.sendStatus(403);
+    else res.json(data.user[0]);
+  });
+});
 app.post('/deletePost', (req, res) => {
   const { id, postid } = req.body;
   console.log(req.body);
