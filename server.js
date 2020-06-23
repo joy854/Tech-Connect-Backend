@@ -58,14 +58,19 @@ app.post('/storeSkill', (req, res) => {
   // .catch((err) => res.status(400).json('Error'));
 });
 
-app.get('/getSkills', (req, res) => {
-  db.select('*')
-    .from('skills')
-    .then((data) => {
-      if (data.length) res.json(data);
-      else res.status(400).json('error');
-    })
-    .catch((err) => res.status(400).json('error'));
+app.get('/getSkills', verifyToken, (req, res) => {
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db.select('*')
+        .from('skills')
+        .then((data) => {
+          if (data.length) res.json(data);
+          else res.status(400).json('error');
+        })
+        .catch((err) => res.status(400).json('error'));
+    }
+  });
 });
 
 app.post('/register', (req, res) => {
