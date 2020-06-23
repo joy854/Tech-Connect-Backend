@@ -149,23 +149,23 @@ app.post('/signin', (req, res) => {
     .catch((err) => res.status(400).json('wrong credentials'));
 });
 
-app.post('/getDetails', verifyToken, (req, res) => {
+app.post('/getDetails', (req, res) => {
   const { userid } = req.body;
   console.log(req.body);
-  jwt.verify(req.token, 'secretkey', (err, authData) => {
-    if (err) {
-      res.sendStatus(403);
-    } else {
-      db.select('*')
-        .from('users')
-        .where('id', '=', userid)
-        .then((data) => {
-          if (data.length) res.json(data[0]);
-          else res.status(400).json('error');
-        })
-        .catch((err) => res.status(400).json('error'));
-    }
-  });
+  // jwt.verify(req.token, 'secretkey', (err, authData) => {
+  // if (err) {
+  //   res.sendStatus(403);
+  // } else {
+  db.select('*')
+    .from('users')
+    .where('id', '=', userid)
+    .then((data) => {
+      if (data.length) res.json(data[0]);
+      else res.status(400).json('error');
+    })
+    .catch((err) => res.status(400).json('error'));
+  // }
+  // });
 });
 
 app.post('/insertPost', verifyToken, (req, res) => {
