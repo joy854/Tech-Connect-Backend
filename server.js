@@ -144,17 +144,23 @@ app.post('/signin', (req, res) => {
     .catch((err) => res.status(400).json('wrong credentials'));
 });
 
-app.post('/getDetails', (req, res) => {
+app.post('/getDetails', verifyToken, (req, res) => {
   const { userid } = req.body;
   console.log(req.body);
-  db.select('*')
-    .from('users')
-    .where('id', '=', userid)
-    .then((data) => {
-      if (data.length) res.json(data[0]);
-      else res.status(400).json('error');
-    })
-    .catch((err) => res.status(400).json('error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      db.select('*')
+        .from('users')
+        .where('id', '=', userid)
+        .then((data) => {
+          if (data.length) res.json(data[0]);
+          else res.status(400).json('error');
+        })
+        .catch((err) => res.status(400).json('error'));
+    }
+  });
 });
 
 app.post('/insertPost', verifyToken, (req, res) => {
@@ -199,104 +205,142 @@ app.post('/getUserFromToken', (req, res) => {
     else res.json(data.user[0]);
   });
 });
-app.post('/deletePost', (req, res) => {
+app.post('/deletePost', verifyToken, (req, res) => {
   const { id, postid } = req.body;
   console.log(req.body);
-  db('posts')
-    .returning('*')
-    .where({
-      id,
-      post_id: postid,
-    })
-    .del()
-    .then((user) => res.json(user[0]))
-    .catch((err) => res.status(400).json('Error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db('posts')
+        .returning('*')
+        .where({
+          id,
+          post_id: postid,
+        })
+        .del()
+        .then((user) => res.json(user[0]))
+        .catch((err) => res.status(400).json('Error'));
+    }
+  });
 });
 
-app.post('/getPosts', (req, res) => {
+app.post('/getPosts', verifyToken, (req, res) => {
   const { userid } = req.body;
   console.log('getposts', userid);
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      var subquery = db
+        .select('to_id')
+        .from('follows')
+        .where('from_id', userid);
+      db.select('*')
+        .from('posts')
+        .where('id', 'in', subquery)
+        .orWhere('id', userid)
+        .orderBy('time_of_creation', 'desc')
+        .then((data) => {
+          if (data.length) res.json(data);
+          else res.status(400).json('error');
+        })
+        .catch((err) => res.status(400).json('error'));
+    }
+  });
   // var subquery = db('users')
   //   .join('follows', userid, '=', 'follows.from_id')
   //   .select('follows.to_id');
-  var subquery = db.select('to_id').from('follows').where('from_id', userid);
-  db.select('*')
-    .from('posts')
-    .where('id', 'in', subquery)
-    .orWhere('id', userid)
-    .orderBy('time_of_creation', 'desc')
-    .then((data) => {
-      if (data.length) res.json(data);
-      else res.status(400).json('error');
-    })
-    .catch((err) => res.status(400).json('error'));
 });
 
-app.post('/users/:id', (req, res) => {
+app.post('/users/:id', verifyToken, (req, res) => {
   const id = req.params.id;
   // console.log(req.body);
-  db.select('*')
-    .from('users')
-    .where('id', '=', id)
-    .then((data) => {
-      if (data.length) res.json(data[0]);
-      else res.status(400).json('Profile Does not exist!');
-    })
-    .catch((err) => res.status(400).json('error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db.select('*')
+        .from('users')
+        .where('id', '=', id)
+        .then((data) => {
+          if (data.length) res.json(data[0]);
+          else res.status(400).json('Profile Does not exist!');
+        })
+        .catch((err) => res.status(400).json('error'));
+    }
+  });
 });
 
-app.get('/users', (req, res) => {
-  db.select('*')
-    .from('users')
-    .orderBy('id')
-    .then((data) => {
-      if (data.length) res.json(data);
-      else res.status(404).json('Not found');
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json('Internal server error');
-    });
+app.get('/users', verifyToken, (req, res) => {
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db.select('*')
+        .from('users')
+        .orderBy('id')
+        .then((data) => {
+          if (data.length) res.json(data);
+          else res.status(404).json('Not found');
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(500).json('Internal server error');
+        });
+    }
+  });
 });
 
-app.get('/getFollowers', (req, res) => {
-  db.select('*')
-    .from('follows')
-    .then((data) => {
-      if (data.length) res.json(data);
-      else res.status(404).json('error');
-    })
-    .catch((err) => res.status(400).json('error'));
+app.get('/getFollowers', verifyToken, (req, res) => {
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db.select('*')
+        .from('follows')
+        .then((data) => {
+          if (data.length) res.json(data);
+          else res.status(404).json('error');
+        })
+        .catch((err) => res.status(400).json('error'));
+    }
+  });
 });
 
-app.post('/insertFollowers', (req, res) => {
+app.post('/insertFollowers', verifyToken, (req, res) => {
   const { from_id, to_id } = req.body;
   console.log(req.body);
-  db('follows')
-    .returning('*')
-    .insert({
-      from_id,
-      to_id,
-    })
-    .then((user) => res.json(user[0]))
-    .catch((err) => res.status(400).json('Error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db('follows')
+        .returning('*')
+        .insert({
+          from_id,
+          to_id,
+        })
+        .then((user) => res.json(user[0]))
+        .catch((err) => res.status(400).json('Error'));
+    }
+  });
 });
 
-app.post('/deleteFollowers', (req, res) => {
+app.post('/deleteFollowers', verifyToken, (req, res) => {
   const { from_id, to_id } = req.body;
   console.log(req.body);
-  db('follows')
-    .returning('*')
-    .where({
-      from_id,
-      to_id,
-    })
-    .del()
-    .then((user) => res.json(user[0]))
-    .catch((err) => res.status(400).json('Error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db('follows')
+        .returning('*')
+        .where({
+          from_id,
+          to_id,
+        })
+        .del()
+        .then((user) => res.json(user[0]))
+        .catch((err) => res.status(400).json('Error'));
+    }
+  });
 });
 
-app.post('/insertComment', (req, res) => {
+app.post('/insertComment', verifyToken, (req, res) => {
   const {
     username,
     fname,
@@ -309,66 +353,81 @@ app.post('/insertComment', (req, res) => {
     content,
   } = req.body;
   console.log(req.body);
-  db('comments')
-    .returning('*')
-    .insert({
-      username,
-      fname,
-      lname,
-      commenter_id,
-      id,
-      post_id,
-      image,
-      content,
-      comment_id,
-      comment_time: new Date(),
-    })
-    .then((user) => res.json(user[0]))
-    .catch((err) => res.status(400).json('Error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db('comments')
+        .returning('*')
+        .insert({
+          username,
+          fname,
+          lname,
+          commenter_id,
+          id,
+          post_id,
+          image,
+          content,
+          comment_id,
+          comment_time: new Date(),
+        })
+        .then((user) => res.json(user[0]))
+        .catch((err) => res.status(400).json('Error'));
+    }
+  });
 });
 
-app.post('/deleteComment', (req, res) => {
+app.post('/deleteComment', verifyToken, (req, res) => {
   const { id, comment_id, post_id } = req.body;
   console.log(req.body);
-  db('comments')
-    .returning('*')
-    .where({
-      id,
-      comment_id,
-      post_id,
-    })
-    .del()
-    .then((user) => res.json(user[0]))
-    .catch((err) => res.status(400).json('Error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db('comments')
+        .returning('*')
+        .where({
+          id,
+          comment_id,
+          post_id,
+        })
+        .del()
+        .then((user) => res.json(user[0]))
+        .catch((err) => res.status(400).json('Error'));
+    }
+  });
 });
 
-app.post('/getComments', (req, res) => {
+app.post('/getComments', verifyToken, (req, res) => {
   const { userid } = req.body;
   console.log('getcomments', userid);
-  var initialsubquery = db
-    .select('to_id')
-    .from('follows')
-    .where('from_id', userid);
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      var initialsubquery = db
+        .select('to_id')
+        .from('follows')
+        .where('from_id', userid);
 
-  var secondsubquery = db
-    .select('id', 'post_id')
-    .from('posts')
-    .where('id', 'in', initialsubquery)
-    .orWhere('id', userid);
-  // .orderBy('time_of_creation', 'desc');
+      var secondsubquery = db
+        .select('id', 'post_id')
+        .from('posts')
+        .where('id', 'in', initialsubquery)
+        .orWhere('id', userid);
+      // .orderBy('time_of_creation', 'desc');
 
-  db.select('*')
-    .from('comments')
-    .whereIn(['id', 'post_id'], secondsubquery)
-    .orderBy('comment_time', 'desc')
-    .then((data) => {
-      if (data.length) res.json(data);
-      else res.status(400).json('error');
-    })
-    .catch((err) => res.status(400).json('error'));
+      db.select('*')
+        .from('comments')
+        .whereIn(['id', 'post_id'], secondsubquery)
+        .orderBy('comment_time', 'desc')
+        .then((data) => {
+          if (data.length) res.json(data);
+          else res.status(400).json('error');
+        })
+        .catch((err) => res.status(400).json('error'));
+    }
+  });
 });
 
-app.post('/insertChat', (req, res) => {
+app.post('/insertChat', verifyToken, (req, res) => {
   const {
     id_from,
     id_to,
@@ -380,77 +439,102 @@ app.post('/insertChat', (req, res) => {
     image_to,
   } = req.body;
   console.log(req.body);
-  db('chats')
-    .returning('*')
-    .insert({
-      id_from,
-      id_to,
-      chat_id,
-      from_fname,
-      to_fname,
-      msg_creation_time: new Date(),
-      msg,
-      image_from,
-      image_to,
-    })
-    .then((user) => res.json(user[0]))
-    .catch((err) => res.status(400).json('Error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db('chats')
+        .returning('*')
+        .insert({
+          id_from,
+          id_to,
+          chat_id,
+          from_fname,
+          to_fname,
+          msg_creation_time: new Date(),
+          msg,
+          image_from,
+          image_to,
+        })
+        .then((user) => res.json(user[0]))
+        .catch((err) => res.status(400).json('Error'));
+    }
+  });
 });
 
-app.get('/getChats', (req, res) => {
-  db.select('*')
-    .from('chats')
-    .orderBy('msg_creation_time', 'desc')
-    .then((data) => {
-      if (data.length) res.json(data);
-      else res.status(400).json('error');
-    })
-    .catch((err) => res.status(400).json('error'));
+app.get('/getChats', verifyToken, (req, res) => {
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db.select('*')
+        .from('chats')
+        .orderBy('msg_creation_time', 'desc')
+        .then((data) => {
+          if (data.length) res.json(data);
+          else res.status(400).json('error');
+        })
+        .catch((err) => res.status(400).json('error'));
+    }
+  });
 });
 
-app.post('/insertlike', (req, res) => {
+app.post('/insertlike', verifyToken, (req, res) => {
   const { curr_user_id, post_owner_id, post_id } = req.body;
   console.log(req.body);
-  db('likes')
-    .returning('*')
-    .insert({
-      curr_user_id,
-      post_owner_id,
-      post_id,
-    })
-    .then((user) => res.json(user[0]))
-    .catch((err) => res.status(400).json('Error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db('likes')
+        .returning('*')
+        .insert({
+          curr_user_id,
+          post_owner_id,
+          post_id,
+        })
+        .then((user) => res.json(user[0]))
+        .catch((err) => res.status(400).json('Error'));
+    }
+  });
 });
 
-app.get('/getLikes', (req, res) => {
-  console.log('HII');
-  db.select('*')
-    .from('likes')
-    .then((data) => {
-      if (data.length) res.json(data);
-      else res.status(400).json('error');
-    })
-    .catch((err) => res.status(400).json('error'));
+app.get('/getLikes', verifyToken, (req, res) => {
+  // console.log('HII');
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db.select('*')
+        .from('likes')
+        .then((data) => {
+          if (data.length) res.json(data);
+          else res.status(400).json('error');
+        })
+        .catch((err) => res.status(400).json('error'));
+    }
+  });
 });
 
-app.post('/deleteLike', (req, res) => {
+app.post('/deleteLike', verifyToken, (req, res) => {
   const { curr_user_id, post_owner_id, post_id } = req.body;
   console.log(req.body);
-  db('likes')
-    .returning('*')
-    .where({
-      curr_user_id,
-      post_owner_id,
-      post_id,
-    })
-    .del()
-    .then((user) => res.json(user[0]))
-    .catch((err) => res.status(400).json('Error'));
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if (err) res.sendStatus(403);
+    else {
+      db('likes')
+        .returning('*')
+        .where({
+          curr_user_id,
+          post_owner_id,
+          post_id,
+        })
+        .del()
+        .then((user) => res.json(user[0]))
+        .catch((err) => res.status(400).json('Error'));
+    }
+  });
 });
 
-app.get('/', (req, res) => {
-  // console.log(connectionString);
-  res.send(`${PORT}     ${process.env.DATABASE_URL}`);
-});
+// app.get('/', (req, res) => {
+//   // console.log(connectionString);
+//   res.send(`${PORT}     ${process.env.DATABASE_URL}`);
+// });
 
 app.listen(PORT);
